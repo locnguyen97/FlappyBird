@@ -13,26 +13,53 @@ public class PlayerController : MonoBehaviour {
 	[SerializeField] private SpriteRenderer playerSpriteRenderer;
 	private static readonly int GrayScaleAmount = Shader.PropertyToID("_GrayscaleAmount");
 
+
+	private bool up;
+	private Vector3 pos;
+	private bool alive;
 	void Start () {
 		tiltSmooth = maxTiltSmooth;
 		playerRigid = GetComponent<Rigidbody2D> ();
 		downRotation = Quaternion.Euler (0, 0, -90);
 		upRotation = Quaternion.Euler (0, 0, 35);
 		SetGrayScale(0);
+		alive = true;
+
 	}
 
+	private float fallAmount = 3;
+	
 	void Update () {
-		if (!start) {
-			// Hover the player before starting the game
-			timer += Time.deltaTime;
-			y = hoverDistance * Mathf.Sin (hoverSpeed * timer);
-			transform.localPosition = new Vector3 (0, y, 0);
-		} else {
-			// Rotate downward while falling
-			transform.rotation = Quaternion.Lerp (transform.rotation, downRotation, tiltSmooth * Time.deltaTime);
+		
+
+		if (alive)
+		{
+			if (!start) {
+				// Hover the player before starting the game
+				timer += Time.deltaTime;
+				y = hoverDistance * Mathf.Sin (hoverSpeed * timer);
+				transform.localPosition = new Vector3 (0, y, 0);
+			} else {
+				// Rotate downward while falling
+				transform.rotation = Quaternion.Lerp (transform.rotation, downRotation, tiltSmooth * Time.deltaTime);
+			}
+			// Limit the rotation that can occur to the player
+			transform.rotation = new Quaternion (transform.rotation.x, transform.rotation.y, Mathf.Clamp (transform.rotation.z, downRotation.z, upRotation.z), transform.rotation.w);
+			if (up)
+			{
+				pos = transform.position;
+				pos.y += 10 * Time.deltaTime;
+				transform.position = pos;
+			}
+			else
+			{
+				pos = transform.position;
+				pos.y -= fallAmount * Time.deltaTime;
+				transform.position = pos;
+			}
 		}
-		// Limit the rotation that can occur to the player
-		transform.rotation = new Quaternion (transform.rotation.x, transform.rotation.y, Mathf.Clamp (transform.rotation.z, downRotation.z, upRotation.z), transform.rotation.w);
+		
+		
 	}
 
 	void LateUpdate () {
@@ -44,6 +71,10 @@ public class PlayerController : MonoBehaviour {
 					GameManager.Instance.GetReady ();
 					GetComponent<Animator>().speed = 2;
 				}
+
+				up = true;
+				CancelInvoke("Falling");
+				Invoke("Falling",0.15f);
 				playerRigid.gravityScale = 1f;
 				tiltSmooth = minTiltSmooth;
 				transform.rotation = upRotation;
@@ -60,16 +91,35 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
+	void Falling()
+	{
+		fallAmount = 3;
+		up = false;
+		CancelInvoke("FallingFast");
+		Invoke("FallingFast",0.15f);
+	}
+
+	void FallingFast()
+	{
+		fallAmount = 6;
+	}
+
 	void OnTriggerEnter2D (Collider2D col) {
-		if (col.transform.CompareTag ("Score")) {
-			Destroy (col.gameObject);
-			GameManager.Instance.UpdateScore ();
-		} else if (col.transform.CompareTag ("Obstacle")) {
-			// Destroy the Obstacles after they reach a certain area on the screen
-			foreach (Transform child in col.transform.parent.transform) {
-				child.gameObject.GetComponent<BoxCollider2D> ().enabled = false;
+		if (alive)
+		{
+			if (col.transform.CompareTag ("Score")) {
+				Destroy (col.gameObject);
+				GameManager.Instance.UpdateScore ();
+			} else if (col.transform.CompareTag ("Obstacle")) {
+				// Destroy the Obstacles after they reach a certain area on the screen
+				/*foreach (Transform child in col.transform.parent.transform) {
+					child.gameObject.GetComponent<BoxCollider2D> ().enabled = false;
+				}*/
+				KillPlayer ();
+				alive = false;
+				CancelInvoke("Falling");
+				CancelInvoke("FallingFast");
 			}
-			KillPlayer ();
 		}
 	}
 
@@ -77,6 +127,8 @@ public class PlayerController : MonoBehaviour {
 		if (col.transform.CompareTag ("Ground")) {
 			playerRigid.simulated = false;
 			KillPlayer ();
+			CancelInvoke("Falling");
+			CancelInvoke("FallingFast");
 			transform.rotation = downRotation;
 		}
 	}
