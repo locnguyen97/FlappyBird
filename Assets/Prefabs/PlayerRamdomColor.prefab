@@ -56,7 +56,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 2dfcce490d398e449bb4895f740751f2, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -124,6 +124,7 @@ MonoBehaviour:
   maxTiltSmooth: 5
   hoverDistance: 0.1
   hoverSpeed: 5
+  playerSpriteRenderer: {fileID: 212882205146042712}
 --- !u!50 &50947411552664758
 Rigidbody2D:
   serializedVersion: 4

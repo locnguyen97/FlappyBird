@@ -19,7 +19,8 @@ public class PlayerRandomColor : MonoBehaviour
     void RamdomColor()
     {
         int id = Random.Range(0, listSprite.Count);
+        Debug.Log(id);
         playerImage.sprite = listSprite[id];
-        animator.SetInteger(Player,id);
+        animator.SetInteger(Player,id+1);
     }
 }

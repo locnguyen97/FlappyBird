@@ -39,8 +39,8 @@ public class GameManager : MonoBehaviour {
 
 		ready = true;
 		// Create one amongst the 3 players
-		flappy = Instantiate (playerPrefabs[Random.Range (0, playerPrefabs.Length)], playerPos.position, transform.rotation);
-		//flappy = Instantiate (playerPrefabsRandomColor, playerPos.position, transform.rotation);
+		//flappy = Instantiate (playerPrefabs[Random.Range (0, playerPrefabs.Length)], playerPos.position, transform.rotation);
+		flappy = Instantiate (playerPrefabsRandomColor, playerPos.position, transform.rotation);
 		flappy.transform.parent = playerPos;
 		// Use one amongst the 2 Backgrounds
 		background.sprite = backgroundImage[Random.Range (0, backgroundImage.Length)];

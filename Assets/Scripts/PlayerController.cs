@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,12 +10,15 @@ public class PlayerController : MonoBehaviour {
 	private float timer, tiltSmooth, y;
 	private Rigidbody2D playerRigid;
 	private Quaternion downRotation, upRotation;
+	[SerializeField] private SpriteRenderer playerSpriteRenderer;
+	private static readonly int GrayScaleAmount = Shader.PropertyToID("_GrayscaleAmount");
 
 	void Start () {
 		tiltSmooth = maxTiltSmooth;
 		playerRigid = GetComponent<Rigidbody2D> ();
 		downRotation = Quaternion.Euler (0, 0, -90);
 		upRotation = Quaternion.Euler (0, 0, 35);
+		SetGrayScale(0);
 	}
 
 	void Update () {
@@ -77,11 +81,37 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
-	public void KillPlayer () {
-		GameManager.Instance.EndGame ();
+	public void KillPlayer ()
+	{
+		GameManager.Instance.EndGame();
 		playerRigid.velocity = Vector2.zero;
 		// Stop the flapping animation
 		GetComponent<Animator> ().enabled = false;
+		StartCoroutine(GrayScaleIenumerator(0.75f));
+		
+	}
+
+	IEnumerator GrayScaleIenumerator(float duration, Action callback = null)
+	{
+		float time = 0;
+		while (duration>time)
+		{
+			float ratito = time / duration;
+			float amount = ratito;
+			SetGrayScale(amount);
+			time += Time.deltaTime;
+			yield return null;
+		}
+		SetGrayScale(1);
+		if (callback != null)
+		{
+			callback.Invoke();
+		}
+	}
+
+	void SetGrayScale(float value)
+	{
+		playerSpriteRenderer.material.SetFloat(GrayScaleAmount,value);
 	}
 
 }
